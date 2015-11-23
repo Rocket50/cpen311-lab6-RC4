@@ -1,6 +1,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use work.NbitRegDecs.all;
 
 -- Entity part of the description.  Describes inputs and outputs
 
@@ -42,14 +43,38 @@ architecture rtl of RC4Cracker is
 	 signal data : STD_LOGIC_VECTOR (7 DOWNTO 0);
 	 signal wren : STD_LOGIC;
 	 signal q : STD_LOGIC_VECTOR (7 DOWNTO 0);	
-
+   signal rst : std_logic;
+   
+   signal fillerCntCurr : unsigned(7 downto 0) := (others => '0');
+   signal fillerStateCurr, fillerStateNext : state_type := state_init;
 	 begin
 	    -- Include the S memory structurally
 	
        u0: s_memory port map (
 	        address => address, clock => CLOCK_50, data => data, wren => wren, q => q);
-			  
-       -- write your code here.  As described in Slide Set 14, this 
+	        	     
+	     --Filler state flip flop
+	     process(CLOCK_50) begin
+	       if(rising_edge(CLOCK_50)) then
+	         if(rst = '0') then
+	           fillerStateCurr <= fillerStateNext;
+	         else
+	           fillerStateCurr <= state_init; 
+	         end if;
+	        end if;
+	     end process; 
+	     
+	     process(CLOCK_50) begin
+	       if(rising_edge(CLOCK_50)) then
+	         if(rst = '0' and fillerStateCurr = state_fill) then
+	           fillerCntCurr <= fillerCntCurr + 1; 
+	         else
+	           fillerCntCurr <= (others => '0');
+	         end if;
+	       end if;
+	     end process;
+	     	     
+	     -- write your code here.  As described in Slide Set 14, this 
        -- code will drive the address, data, and wren signals to
        -- fill the memory with the values 0...255
          
@@ -57,6 +82,31 @@ architecture rtl of RC4Cracker is
        -- that after the memory is filled, you enter a DONE state which
        -- does nothing but loop back to itself.  
 
+	     --Filler next state logic
+	     process(all) begin
+	       if(fillerStateCurr = state_init) then
+	         fillerStateNext <= state_fill;
+	       elsif(fillerStateCurr = state_fill) then
+	       
+	         if(fillerCntCurr = to_unsigned(255,fillerCntCurr'LENGTH)) then
+	           fillerStateNext <= state_done;
+	         else
+	           fillerStateNext <= fillerStateCurr;
+	         end if;
+	         
+	       elsif(fillerStateCurr = state_done) then
+	         fillerStateNext <= fillerStateCurr;
+	       else
+	         fillerStateNext <= fillerStateCurr;
+	       end if;
+      end process;
+      
+      
+      address <= std_logic_vector(fillerCntCurr);
+      wren <= '1';
+      data <= std_logic_vector(fillerCntCurr);
+      
+      rst <= KEY(0);
 
 end RTL;
 
