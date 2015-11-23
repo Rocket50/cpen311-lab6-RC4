@@ -47,7 +47,7 @@ architecture rtl of RC4Cracker is
 	    -- Include the S memory structurally
 	
        u0: s_memory port map (
-	        address => address, clock => CLOCK_50, data => data, wren => wren, q => q);
+	        address => address, clk => CLOCK_50, data => data, wren => wren, q => q);
 			  
        -- write your code here.  As described in Slide Set 14, this 
        -- code will drive the address, data, and wren signals to
