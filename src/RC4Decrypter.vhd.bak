@@ -152,7 +152,7 @@ architecture impl of RC4Decrypter is
       
         wren <= '0';
         status <= RUNNING;
-        addr <= std_logic_vector(currJ + unsigned(q));
+        addr <= std_logic_vector((currJ + unsigned(q))mod 256);
         data <= (others => '-');
         
         decryptWren <= '0';
@@ -170,7 +170,7 @@ architecture impl of RC4Decrypter is
       elsif(state = SD2) then
         wren <= '0';
         status <= RUNNING;
-        addr <= std_logic_vector(currsStored + unsigned(q));
+        addr <= std_logic_vector((currsStored + unsigned(q)) mod 256);
         data <= (others => '-');
         
         decryptWren <= '0';

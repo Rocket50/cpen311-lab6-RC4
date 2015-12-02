@@ -109,7 +109,7 @@ architecture impl of RC4Decrypter is
         if (((q xor msgq) > 8d"96" and (q xor msgq) < 8d"123") or (q xor msgq) = 8d"32") then
           nextstate <= SD4; 
         else
-          nextstate <= SD4;
+          nextstate <= FINISHEDFAIL;
         end if;
 
       elsif(state = SD4) then

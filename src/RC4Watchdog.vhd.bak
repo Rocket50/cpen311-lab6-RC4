@@ -17,8 +17,10 @@ architecture impl of RC4Watchdog is
   --constant CORE1START : std_logic_vector(23 downto 0) :=  "00000000" & "00000000" & "00000000";
   --constant CORE1END : std_logic_vector(23 downto 0) :=  "00111111" & "11111111" & "11111111";
   --"00000000" & "00110001" & "11111111";
-  constant CORE1START : std_logic_vector(23 downto 0) := "11111111" & "00110001" & "00000000";
-  constant CORE1END : std_logic_vector(23 downto 0) := "000000000011000111111111"; 
+  constant CORE1START : std_logic_vector(23 downto 0) := "00000000" & "00000000" & "00000000"; 
+  constant CORE1END : std_logic_vector(23 downto 0) := "0001000" & "00000000" & "00000000"; 
+  constant CORE2START : std_logic_vector(23 downto 0) := "0001000" & "00000000" & "00000000"; 
+  constant CORE2END : std_logic_vector(23 downto 0) := "00111111" & "11111111" & "11111111";
   
   constant COREDONESUCCESS : std_logic_vector := "11";
   constant COREDONEFAILED : std_logic_vector := "10";
@@ -34,8 +36,13 @@ architecture impl of RC4Watchdog is
   begin
     
     CORE1 : RC4Cracker port map(CLOCK_50 => CLOCK_50, status => c1_status, keystart => c1_start, keyend => c1_end, run => c1_run, KEY => KEY, SW => SW, LEDG => open, LEDR => open);
+    CORE2 : RC4Cracker port map(CLOCK_50 => CLOCK_50, status => c2_status, keystart => c2_start, keyend => c2_end, run => c2_run, KEY => KEY, SW => SW, LEDG => open, LEDR => open);
+
     c1_start <= CORE1START;
     c1_end <= CORE1END;
+    
+    c2_start <= CORE2START;
+    c2_end <= CORE2END;
     
     process(CLOCK_50) begin
       if(rising_edge(CLOCK_50)) then
@@ -48,9 +55,9 @@ architecture impl of RC4Watchdog is
     end process;
   
     process(all) begin
-      if(c1_status = COREDONESUCCESS) then
+      if(c1_status = COREDONESUCCESS or c2_status = COREDONESUCCESS) then
         nextstate <= STATEDONE;
-      elsif(c1_status = COREDONEFAILED) then
+      elsif(c1_status = COREDONEFAILED and c2_status = COREDONEFAILED) then
         nextstate <= STATEDONEFAILED;
       else
         nextstate <= GO;
@@ -62,15 +69,18 @@ architecture impl of RC4Watchdog is
     process(all) begin
       if(state = STATEDONE) then
         c1_run <= '0';
+        c2_run <= '0';
         LEDG(0) <= '1';
         LEDR <= (others => '0');
         
       elsif(state = STATEDONEFAILED) then
         c1_run <= '0';
+        c2_run <= '0';
         LEDG(0) <= '0';
         LEDR <= (others => '1');
       else
         c1_run <= '1';
+        c2_run <= '1';
         LEDG(0) <= '0';
         LEDR <= (others => '0');
       end if;
