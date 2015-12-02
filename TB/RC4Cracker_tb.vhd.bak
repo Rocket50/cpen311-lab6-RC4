@@ -1,0 +1,23 @@
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+use work.NbitRegDecs.all;
+use work.RC4shufferdecs.all;
+use work.RC4fillerdecs.all; 
+use work.RC4Crackerdecs.all;
+
+entity RC4Cracker_tb is
+end entity;
+
+architecture impl of RC4Cracker_tb is
+  
+  signal clk : std_logic := '0';
+  
+  begin
+    
+    DUT : RC4Cracker port map(run => '1', CLOCK_50 => clk, KEY => (others => '0'), SW => (others => '0'), LEDG => open, LEDR => open);
+    
+    process begin
+      wait;
+    end process;
+end impl;
